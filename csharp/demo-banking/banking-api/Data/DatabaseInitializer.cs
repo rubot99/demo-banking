@@ -17,7 +17,7 @@ namespace banking_api.Data
             var command = connection.CreateCommand();
             await connection.ExecuteAsync(@"
                 CREATE TABLE IF NOT EXISTS Accounts (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Id TEXT PRIMARY KEY,
                     AccountNumber TEXT NOT NULL,
                     AccountHolderName TEXT NOT NULL
                 );");

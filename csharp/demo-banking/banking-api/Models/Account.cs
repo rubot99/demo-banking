@@ -8,6 +8,8 @@
 
         public string AccountHolderName { get; set; }
 
+        public Guid ProgrammeId { get; set; }
+
         public Account()
         {
             Id = Guid.CreateVersion7();

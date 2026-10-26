@@ -1,6 +1,7 @@
 using banking_api.Data;
 using banking_api.Endpoints.Requests;
 using banking_api.Models;
+using banking_api.Services;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddSingleton<IDbConnectionFactory>(_ => new SqliteConnectionFactory(builder.Configuration.GetValue<string>("Database:ConnectionString")));
+builder.Services.AddSingleton<DatabaseInitializer>();
+builder.Services.AddSingleton<IAccountService, AccountService>();
 
 var app = builder.Build();
+
+var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
+await databaseInitializer.InitializeAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -23,7 +29,7 @@ app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
 
-app.MapGet("/account", () => {
+app.MapGet("/accounts", () => {
     return Results.Ok(new List<Account> {
         new Account
         {
@@ -40,7 +46,7 @@ app.MapGet("/account", () => {
     });
 });
 
-app.MapGet("/account/{id:guid}", (Guid id) => {
+app.MapGet("/accounts/{id:guid}", (Guid id) => {
     return Results.Ok(new Account
     {
         AccountHolderName = "John Smith",
@@ -49,15 +55,28 @@ app.MapGet("/account/{id:guid}", (Guid id) => {
     });
 });
 
-app.MapPost("/account", (CreateAccountRequest createAccountRequest) => {
-    return Results.Created();
+app.MapPost("/accounts", async (CreateAccountRequest createAccountRequest, IAccountService accountService) => {
+
+    var account = new Account
+    {
+        AccountHolderName = createAccountRequest.AccountHolderName
+    };
+
+    var created = await accountService.CreateAsync(account);
+
+    if(!created)
+    {
+        return Results.BadRequest();
+    }
+
+    return Results.Created($"/accounts/{account.Id}", account);
 });
 
-app.MapPut("/account", (UpdateAccountRequest updateAccountRequest) => {
+app.MapPut("/accounts", (UpdateAccountRequest updateAccountRequest) => {
     return Results.Ok();
 });
 
-app.MapDelete("/account/{id:guid}", (Guid id) => {
+app.MapDelete("/accounts/{id:guid}", (Guid id) => {
     return Results.NoContent();
 });
 
