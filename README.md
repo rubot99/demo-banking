@@ -1,35 +1,33 @@
-# demo-banking
+# Demo Banking Project
 
+Work In Progress
+
+## Entity Relationship Diagram
 
 ```mermaid
     erDiagram
-    ORGANISATION 
-    PROGRAMME
-    ACCOUNT
-    CUSTOMER ||--o{ ORDER : places
-    ORDER ||--|{ ORDER_ITEM : contains
-    PRODUCT ||--o{ ORDER_ITEM : includes
-    ORGANISATION
-    PROGRAMME
-    ACCOUNT
-    CUSTOMER {
-        string id
-        string name
-        string email
-    }
-    ORDER {
-        string id
-        date orderDate
-        string status
-    }
-    PRODUCT {
-        string id
-        string name
-        float price
-    }
-    ORDER_ITEM {
-        int quantity
-        float price
-    }
+        ORGANISATION ||--o{ PROGRAMME : has
+        PROGRAMME||--o{ ACCOUNT : has
+        ACCOUNT
+        ORGANISATION {
+            guid id
+            string name
+            string address
+
+        }
+        PROGRAMME {
+            guid id
+            string name
+            string description
+            date startDate
+            date endDate
+            int startRange
+            int endRange
+        }
+        ACCOUNT {
+            guid id
+            string accountNumber
+            string accountHolderName
+        }
 
 ```
