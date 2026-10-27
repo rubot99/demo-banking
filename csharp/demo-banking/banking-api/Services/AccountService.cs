@@ -1,19 +1,10 @@
 ﻿using banking_api.Data;
 using banking_api.Models;
-using Dapper;
 
 namespace banking_api.Services
 {
     public class AccountService : IAccountService
     {
-        private readonly IDbConnectionFactory _dbConnectionFactory;
-
-        public AccountService(IDbConnectionFactory dbConnectionFactory)
-        {
-            _dbConnectionFactory = dbConnectionFactory;
-
-        }
-
         public async Task<bool> CreateAsync(Account account)
         {
             //var existingAccount = await GetByAccountNumberAsync(account.AccountNumber);
@@ -21,14 +12,16 @@ namespace banking_api.Services
             //{
             //    return false;
             //}
-                        
-            using var connection = await _dbConnectionFactory.CreateConnectionAsync();
 
-            var result = await connection.ExecuteAsync(
-                "INSERT INTO Accounts (Id, AccountNumber, AccountHolderName) VALUES (@Id, @AccountNumber, @AccountHolderName)",
-                new { account.Id, account.AccountNumber, account.AccountHolderName });
+            ////using var connection = await _dbConnectionFactory.CreateConnectionAsync();
 
-            return result > 0;
+            ////var result = await connection.ExecuteAsync(
+            ////    "INSERT INTO Accounts (Id, AccountNumber, AccountHolderName) VALUES (@Id, @AccountNumber, @AccountHolderName)",
+            ////    new { account.Id, account.AccountNumber, account.AccountHolderName });
+
+            ////return result > 0;
+            ///
+            throw new NotImplementedException();
         }
 
         public Task<bool> DeleteAsync(Guid accountId)

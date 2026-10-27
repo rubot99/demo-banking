@@ -1,17 +1,36 @@
 ﻿namespace banking_api.Models
 {
-    public class Organisation
+    public class Organisation : EntityBase
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public string Name { get; private set; }
+        public string Address { get; private set; }
+        public string Email { get; private set; }
 
         public Organisation()
         {
-            Id = Guid.CreateVersion7();
+            Name = string.Empty;
+            Address = string.Empty;
+            Email = string.Empty;
+        }
+
+        public Organisation(string name, string address, string email)
+        {
+            Name = name;
+            Address = address;
+            Email = email;
+        }
+
+        public void Update(string name, string address, string email)
+        {
+            Name = name;
+            Address = address;
+            Email = email;
+            UpdateTimestamp();
+        }
+
+        public static Organisation Create(string name, string address, string email)
+        {
+            return new Organisation(name, address, email);
         }
     }
 }
