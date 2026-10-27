@@ -1,14 +1,15 @@
-﻿using banking_api.Models;
+﻿using banking_api.Endpoints.DataTransferObjects;
+using banking_api.Models;
 
 namespace banking_api.Services
 {
-    public interface IOrganisationService
+    public interface IOrganisationService 
     {
-        public Task<bool> CreateAsync(Organisation organisation);
+        public Task<OrganisationDto> CreateAsync(CreateOrganisationDto command);
 
-        public Task<Organisation?> GetByIdAsync(Guid organisationId);
+        public Task<OrganisationDto?> GetByIdAsync(Guid organisationId);
 
-        public Task<IEnumerable<Organisation>> GetAllAsync();
+        public Task<IEnumerable<OrganisationDto>> GetAllAsync();
 
         public Task<bool> UpdateAsync(Organisation organisation);
 

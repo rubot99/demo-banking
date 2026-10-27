@@ -1,11 +1,19 @@
 using banking_api.Data;
 using banking_api.Endpoints.Requests;
+using banking_api.Endpoints.DataTransferObjects;
 using banking_api.Models;
 using banking_api.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Services.AddSerilog();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -16,9 +24,12 @@ builder.Services.AddDbContext<BankDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddSingleton<IAccountService, AccountService>();
+builder.Services.AddTransient<IAccountService, AccountService>();
+builder.Services.AddTransient<IOrganisationService, OrganisationService>();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,6 +40,22 @@ if (app.Environment.IsDevelopment())
 app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
+
+app.MapPost("/organisations", async (CreateOrganisationDto command, IOrganisationService organisationService) =>
+{
+    var organisation = await organisationService.CreateAsync(command);
+    return Results.Created($"/organisations/{organisation.Id}", organisation);
+});
+
+app.MapDelete("/organisations/{id:guid}", async (Guid id, IOrganisationService organisationService) =>
+{
+    var deleted = await organisationService.DeleteAsync(id);
+    if (!deleted)
+    {
+        return Results.NotFound();
+    }
+    return Results.NoContent();
+});
 
 app.MapGet("/accounts", () => {
     return Results.Ok(new List<Account> {
@@ -56,11 +83,11 @@ app.MapGet("/accounts/{id:guid}", (Guid id) => {
     });
 });
 
-app.MapPost("/accounts", async (CreateAccountRequest createAccountRequest, IAccountService accountService) => {
+app.MapPost("/accounts", async (CreateAccountRequest command, IAccountService accountService) => {
 
     var account = new Account
     {
-        AccountHolderName = createAccountRequest.AccountHolderName
+        AccountHolderName = command.AccountHolderName
     };
 
     var created = await accountService.CreateAsync(account);
