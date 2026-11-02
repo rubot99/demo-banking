@@ -34,9 +34,11 @@ namespace banking_api.Services
             {
                 _dbContext.Organisations.Remove(existingOrganisation);
                 var result = await _dbContext.SaveChangesAsync();
+
+                return result > 0;
             }
 
-            return false;
+            return true;
         }
 
         public async Task<IEnumerable<OrganisationDto>> GetAllAsync()
@@ -56,9 +58,20 @@ namespace banking_api.Services
             return organisation == null ? null : new OrganisationDto(organisation.Id, organisation.Name, organisation.Address, organisation.Email);
         }
 
-        public Task<bool> UpdateAsync(Organisation organisation)
+        public async Task<bool> UpdateAsync(Organisation organisation)
         {
-            throw new NotImplementedException();
+            var existingOrganisation = await _dbContext.Organisations.FindAsync(organisation.Id);
+
+            if (existingOrganisation != null)
+            {
+                existingOrganisation.Update(organisation.Name, organisation.Address, organisation.Email);
+
+                var result = await _dbContext.SaveChangesAsync();
+
+                return result > 0;
+            }
+
+            return false;
         }
     }
 }

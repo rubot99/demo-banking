@@ -6,6 +6,8 @@ using banking_api.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
+using FluentValidation;
+using banking_api.Endpoints.Internal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +26,9 @@ builder.Services.AddDbContext<BankDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddEndpoints<Program>(builder.Configuration);
 builder.Services.AddTransient<IAccountService, AccountService>();
-builder.Services.AddTransient<IOrganisationService, OrganisationService>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 
@@ -41,21 +44,9 @@ app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
 
-app.MapPost("/organisations", async (CreateOrganisationDto command, IOrganisationService organisationService) =>
-{
-    var organisation = await organisationService.CreateAsync(command);
-    return Results.Created($"/organisations/{organisation.Id}", organisation);
-});
+app.UseEndpoints<Program>();
 
-app.MapDelete("/organisations/{id:guid}", async (Guid id, IOrganisationService organisationService) =>
-{
-    var deleted = await organisationService.DeleteAsync(id);
-    if (!deleted)
-    {
-        return Results.NotFound();
-    }
-    return Results.NoContent();
-});
+
 
 app.MapGet("/accounts", () => {
     return Results.Ok(new List<Account> {
