@@ -14,30 +14,17 @@ namespace banking_api.Endpoints
 
         public static void DefineEndpoints(IEndpointRouteBuilder app)
         {
-            app.MapPost("/organisations", CreateOrganisationAsync);
+            app.MapPost("/organisations", CreateOrganisationAsync)
+                .WithName("CreateOrganisation");
 
-            app.MapGet("/organisations/{id:guid}", GetOrganisationByIdAsync);
+            app.MapGet("/organisations/{id:guid}", GetOrganisationByIdAsync)
+                .WithName("GetOrganisation");
 
-            app.MapGet("/organisations", async (IOrganisationService organisationService) =>
-            {
-                var organisations = await organisationService.GetAllAsync();
+            app.MapGet("/organisations", GetOrganisationsAsync)
+                .WithName("GetOrganisations");
 
-                if (organisations == null)
-                {
-                    return Results.NotFound();
-                }
-                return Results.Ok(organisations);
-            });
-
-            app.MapDelete("/organisations/{id:guid}", async (Guid id, IOrganisationService organisationService) =>
-            {
-                var deleted = await organisationService.DeleteAsync(id);
-                if (!deleted)
-                {
-                    return Results.NotFound();
-                }
-                return Results.NoContent();
-            });
+            app.MapDelete("/organisations/{id:guid}", DeleteOrganisationAsync)
+                .WithName("DeleteOrganisation");
         }
 
         internal static async Task<IResult> CreateOrganisationAsync(CreateOrganisationDto command, IOrganisationService organisationService, IValidator<CreateOrganisationDto> validator)
@@ -51,7 +38,7 @@ namespace banking_api.Endpoints
 
             var organisation = await organisationService.CreateAsync(command);
 
-            return Results.Created($"/organisations/{organisation.Id}", organisation);
+            return Results.CreatedAtRoute("GetOrganisation", new { id = organisation.Id }, organisation);
         }
 
         internal static async Task<IResult> GetOrganisationByIdAsync(Guid id, IOrganisationService organisationService)
@@ -62,6 +49,27 @@ namespace banking_api.Endpoints
                 return Results.NotFound();
             }
             return Results.Ok(organisation);
+        }
+
+        internal static async Task<IResult> GetOrganisationsAsync(IOrganisationService organisationService)
+        {
+            var organisations = await organisationService.GetAllAsync();
+
+            if (organisations == null)
+            {
+                return Results.NotFound();
+            }
+            return Results.Ok(organisations);
+        }
+
+        internal static async Task<IResult> DeleteOrganisationAsync(Guid id, IOrganisationService organisationService)
+        {
+            var deleted = await organisationService.DeleteAsync(id);
+            if (!deleted)
+            {
+                return Results.NotFound();
+            }
+            return Results.NoContent();
         }
     }
 }

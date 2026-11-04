@@ -1,11 +1,12 @@
 ﻿using banking_api.Data;
+using banking_api.Endpoints.DataTransferObjects;
 using banking_api.Models;
 
 namespace banking_api.Services
 {
     public class AccountService : IAccountService
     {
-        public async Task<bool> CreateAsync(Account account)
+        public async Task<AccountDto> CreateAsync(CreateAccountDto command)
         {
             //var existingAccount = await GetByAccountNumberAsync(account.AccountNumber);
             //if (existingAccount != null)
@@ -29,22 +30,22 @@ namespace banking_api.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Account>> GetAllAsync()
+        public Task<IEnumerable<AccountDto>> GetAllAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<Account?> GetByAccountNumberAsync(string accountNumber)
+        public Task<AccountDto?> GetByAccountNumberAsync(string accountNumber)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Account?> GetByIdAsync(Guid accountId)
+        public Task<AccountDto?> GetByIdAsync(Guid accountId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> UpdateAsync(Account account)
+        public Task<bool> UpdateAsync(UpdateAccountDto command)
         {
             throw new NotImplementedException();
         }

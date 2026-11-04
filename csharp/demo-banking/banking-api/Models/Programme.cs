@@ -8,6 +8,8 @@
         public DateTime EndDate { get; set; }
         public int StartRange { get; set; }
         public int EndRange { get; set; }
+        public ICollection<Account> Accounts { get; set; } = new List<Account>();
+        public Organisation Organisation { get; set; } = null!;
         public Guid OrganisationId { get; set; }
 
         public Programme()

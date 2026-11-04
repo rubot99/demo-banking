@@ -1,18 +1,19 @@
-﻿using banking_api.Models;
+﻿using banking_api.Endpoints.DataTransferObjects;
+using banking_api.Models;
 
 namespace banking_api.Services
 {
     public interface IAccountService
     {
-        public Task<bool> CreateAsync(Account account);
+        public Task<AccountDto> CreateAsync(CreateAccountDto command);
 
-        public Task<Account?> GetByIdAsync(Guid accountId);
+        public Task<AccountDto?> GetByIdAsync(Guid accountId);
 
-        public Task<Account?> GetByAccountNumberAsync(string accountNumber);
+        public Task<AccountDto?> GetByAccountNumberAsync(string accountNumber);
 
-        public Task<IEnumerable<Account>> GetAllAsync();
+        public Task<IEnumerable<AccountDto>> GetAllAsync();
 
-        public Task<bool> UpdateAsync(Account account);
+        public Task<bool> UpdateAsync(UpdateAccountDto command);
 
         public Task<bool> DeleteAsync(Guid accountId);
     }

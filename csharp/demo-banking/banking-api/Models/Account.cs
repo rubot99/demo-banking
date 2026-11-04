@@ -12,6 +12,7 @@
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
+        public Programme Programme { get; set; } = null!;
 
         public Guid ProgrammeId { get; set; }
 

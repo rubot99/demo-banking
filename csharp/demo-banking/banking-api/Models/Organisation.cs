@@ -6,6 +6,8 @@
         public string Address { get; private set; }
         public string Email { get; private set; }
 
+        public ICollection<Programme> Programmes { get; set; } = new List<Programme>();
+
         public Organisation()
         {
             Name = string.Empty;
