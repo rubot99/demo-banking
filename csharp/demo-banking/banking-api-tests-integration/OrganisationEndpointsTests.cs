@@ -132,6 +132,36 @@ namespace banking_api_tests_integration
             existingOrganisations.Should().BeEmpty();
         }
 
+        [Fact]
+        public async Task DeleteOrganisation_ReturnsNoContent_WhenOrganisationExists()
+        {
+            // Arrange
+            var httpClient = _factory.CreateClient();
+            var organisation = new CreateOrganisationDto("Test Organisation", "123 Test Street", "test@organisation.com");
+            var createdResult = await httpClient.PostAsJsonAsync("/organisations", organisation);
+            var createdOrganisation = await createdResult.Content.ReadFromJsonAsync<OrganisationDto>();
+            _createdOrganisationIds.Add(createdOrganisation!.Id);
+
+            // Act
+            var deleteResult = await httpClient.DeleteAsync($"/organisations/{createdOrganisation.Id}");
+
+            // Assert
+            deleteResult.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        [Fact]
+        public async Task DeleteOrganisation_ReturnsNotFound_WhenOrganisationDoesNotExist()
+        {
+            // Arrange
+            var httpClient = _factory.CreateClient();
+
+            // Act
+            var deleteResult = await httpClient.DeleteAsync("/organisations/123e4567-e89b-12d3-a456-4266141740");
+
+            // Assert
+            deleteResult.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
         public Task InitializeAsync() => Task.CompletedTask;
 
         public async Task DisposeAsync()
