@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace banking_api_tests.Models
+namespace banking_api_tests_unit.Models
 {
     public class OrganisationTests
     {

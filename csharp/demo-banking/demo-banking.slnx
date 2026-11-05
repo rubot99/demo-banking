@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path="docker-compose.yml" />
   </Folder>
-  <Project Path="banking-api-tests/banking-api-tests.csproj" />
+  <Project Path="banking-api-tests-integration/banking-api-tests-integration.csproj" Id="fe992112-1946-485f-bb4c-e3dcafcc332f" />
+  <Project Path="banking-api-tests-unit/banking-api-tests-unit.csproj" Id="6a6038d6-ef34-4496-aa5d-63f3ac9a734e" />
   <Project Path="banking-api/banking-api.csproj" />
 </Solution>
