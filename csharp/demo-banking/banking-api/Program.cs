@@ -22,8 +22,8 @@ builder.Services.AddDbContext<BankDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddEndpoints<Program>(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddEndpoints<Program>(builder.Configuration);
 
 var app = builder.Build();
 

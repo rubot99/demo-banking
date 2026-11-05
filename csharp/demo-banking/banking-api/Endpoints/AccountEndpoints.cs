@@ -49,13 +49,13 @@ namespace banking_api.Endpoints
             return Results.Ok(accounts);
         }
 
-        internal static async Task<IResult> UpdateAccountAsync(Guid id, UpdateAccountDto updateAccountDto, IAccountService accountService, IValidator<UpdateAccountDto> validator)
+        internal static async Task<IResult> UpdateAccountAsync(Guid id, UpdateAccountDto updateAccountDto, IAccountService accountService)
         {
-            var validationResult = await validator.ValidateAsync(updateAccountDto);
-            if (!validationResult.IsValid)
-            {
-                return Results.BadRequest(validationResult.Errors);
-            }
+            //var validationResult = await validator.ValidateAsync(updateAccountDto);
+            //if (!validationResult.IsValid)
+            //{
+            //    return Results.BadRequest(validationResult.Errors);
+            //}
             var updated = await accountService.UpdateAsync(updateAccountDto);
             if (!updated)
             {

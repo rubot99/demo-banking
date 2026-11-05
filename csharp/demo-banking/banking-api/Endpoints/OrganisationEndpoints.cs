@@ -15,16 +15,31 @@ namespace banking_api.Endpoints
         public static void DefineEndpoints(IEndpointRouteBuilder app)
         {
             app.MapPost("/organisations", CreateOrganisationAsync)
-                .WithName("CreateOrganisation");
+                .WithName("CreateOrganisation")
+                .Accepts<CreateOrganisationDto>("application/json")
+                .Produces<OrganisationDto>(StatusCodes.Status201Created)
+                .Produces<IEnumerable<FluentValidation.Results.ValidationFailure>>(StatusCodes.Status400BadRequest)
+                .WithTags("Organisations")
+                .WithDescription("Creates a new organisation. Returns the created organisation with a 201 status code or validation errors with a 400 status code.");
 
             app.MapGet("/organisations/{id:guid}", GetOrganisationByIdAsync)
-                .WithName("GetOrganisation");
+                .WithName("GetOrganisation")
+                .Produces<OrganisationDto>(StatusCodes.Status200OK)
+                .WithTags("Organisations")
+                .WithDescription("Retrieves an organisation by its ID.");
 
             app.MapGet("/organisations", GetOrganisationsAsync)
-                .WithName("GetOrganisations");
+                .WithName("GetOrganisations")
+                .Produces<IEnumerable<OrganisationDto>>(StatusCodes.Status200OK)
+                .WithTags("Organisations")
+                .WithDescription("Retrieves all organisations.");
 
             app.MapDelete("/organisations/{id:guid}", DeleteOrganisationAsync)
-                .WithName("DeleteOrganisation");
+                .WithName("DeleteOrganisation")
+                .Produces(StatusCodes.Status204NoContent)
+                .Produces(StatusCodes.Status404NotFound)
+                .WithTags("Organisations")
+                .WithDescription("Deletes an organisation by its ID.");
         }
 
         internal static async Task<IResult> CreateOrganisationAsync(CreateOrganisationDto command, IOrganisationService organisationService, IValidator<CreateOrganisationDto> validator)
