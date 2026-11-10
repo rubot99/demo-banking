@@ -18,39 +18,20 @@ Once the domain is worked out in C#, the later languages can focus purely on the
 - Help freely with tooling chores (build errors, package setup, git), but explain what was wrong so the user learns it.
 - Keep explanations short. The user is experienced and rusty, not a beginner.
 
-## Domain
+## Requirements: the source of truth
 
-```
-Organisation 1──* Programme 1──* Account 1──* Transaction
-```
+**[docs/requirements.md](docs/requirements.md)** defines the domain, the exact API contract, the error codes, the staged roadmap, and which language features each feature exercises. Every implementation must match it.
 
-- **Organisation**: the bank or institution.
-- **Programme**: a bank *product*, e.g. "Instant Saver" or "Fixed Saver". It has a start date and an optional end date.
-  Later it will carry product rules (minimum opening deposit, deposit limits such as £50/week, and so on).
-- **Account**: belongs to one Programme and has an account number and a holder name.
-- **Transaction** (planned): append-only movements of money on an account.
+- **Scope filter:** keep features minimal. A feature belongs only if it gives a natural reason to practise a language feature. Push back on scope creep.
+- When reviewing code, check it against the requirement IDs (`ACC-2`, `TXN-5`, …) and mention any gap.
+- Changes to the spec are made in the doc first, then in the code. Keep the README ERD in sync.
 
-Domain rules:
-- Money is `decimal` (or the language equivalent). Never use floating point.
-- Transactions are **append-only**. To correct one, post a reversal; never update or delete.
-- **Balance is derived** from the sum of an account's transactions, not stored as a mutable column.
-- IDs are UUIDv7 (time-ordered GUIDs).
-
-## Roadmap
-
-1. CRUD for Organisation, Programme and Account (in progress).
-2. Transactions plus derived balance: deposit and withdraw, with no overdraft.
-3. Programme rules: minimum opening deposit, deposit limits, end date enforcement.
-4. Double-entry ledger: journal entries with balanced debit and credit lines.
-5. Re-implement in Python, then other languages.
-
-## Open design questions
-
-- What are `Programme.StartRange` / `EndRange` for? Possibly account number ranges per programme. Not decided yet.
-- How should account numbers be generated and kept unique?
+In short: Organisation (tenant / bank) 1-* Programme 1-* Account 1-* Transaction, and Programme 1-* ProgrammeRule.
+Money is decimal, transactions are append-only (corrected by reversal), the balance is derived, and IDs are UUIDv7.
 
 ## Repo layout
 
+- `docs/requirements.md`: the language-agnostic spec (see above).
 - `README.md`: project overview and the Mermaid ERD. Remind the user to update the ERD when entities change.
 - `csharp/`: .NET implementation. See [csharp/CLAUDE.md](csharp/CLAUDE.md).
-- `python/`: future. Add a `python/CLAUDE.md` when it is created.
+- `python/`, `go/`: future. Add a per-language `CLAUDE.md` when each is created.

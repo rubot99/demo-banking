@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace banking_api.Validators
 {
-    public class OrganisationValidator : AbstractValidator<CreateOrganisationDto>
+    public class UpdateOrganisationDtoValidator : AbstractValidator<UpdateOrganisationDto>
     {
-        public OrganisationValidator()
+        public UpdateOrganisationDtoValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Organisation name is required.")

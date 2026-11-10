@@ -1,67 +1,74 @@
 # CLAUDE.md (C# / .NET)
 
 The coaching rules in the root [CLAUDE.md](../CLAUDE.md) apply here: the user writes the code, and Claude hints, reviews and explains.
+The spec is [docs/requirements.md](../docs/requirements.md). Its §9 is the current list of gaps between this code and the spec.
 
 ## Stack
 
 - .NET 10, ASP.NET Core Minimal APIs
-- Dapper + Microsoft.Data.Sqlite (raw SQL, no EF Core)
+- EF Core 10 + Npgsql (PostgreSQL 18 via `docker-compose.yml`), code-first migrations
+- FluentValidation (validators are registered from the assembly)
+- Serilog (console sink, request logging)
 - OpenAPI + Scalar for API docs
-- Tests: xUnit, NSubstitute (mocks), Shouldly (assertions)
+- Tests: xUnit, FluentAssertions, `Microsoft.AspNetCore.Mvc.Testing`
 
 ## Commands
 
 Run from `csharp/demo-banking/`:
 
 ```
+docker compose up -d                      # Postgres on localhost:5432
+dotnet ef database update --project banking-api
 dotnet build
 dotnet test
-dotnet run --project banking-api      # Scalar UI at /scalar
+dotnet run --project banking-api          # Scalar UI at /scalar
 ```
 
-The SQLite file is `accounts.db`. Its location is set by `Database:ConnectionString` in `appsettings.json`.
+The connection string is `ConnectionStrings:DefaultConnection` in `banking-api/appsettings.json`.
 
-## Structure (`banking-api/`)
+## Structure
 
-- `Program.cs`: DI registrations and all endpoint mappings.
-- `Models/`: `Organisation`, `Programme`, `Account`.
-- `Services/`: one `IXxxService` interface plus a Dapper implementation per entity.
-- `Data/`: `IDbConnectionFactory` / `SqliteConnectionFactory`. `DatabaseInitializer` creates the tables at startup (`CREATE TABLE IF NOT EXISTS`).
-- `Endpoints/Requests/`: request DTOs with DataAnnotations.
-- `Validators/`: empty, reserved for validation logic.
+- `banking-api/Program.cs`: Serilog, OpenAPI, DbContext and validators. Endpoints are discovered automatically.
+- `Endpoints/Internal/`: `IEndpoints` (static abstract `AddServices` / `DefineEndpoints`) plus reflection-based `AddEndpoints<T>` / `UseEndpoints<T>`.
+  Each `XxxEndpoints` class registers its own service and maps its routes.
+- `Endpoints/DataTransferObjects/`: request/response `record`s.
+- `Models/`: entities. `EntityBase` provides `Id` (UUIDv7), `CreatedAt` and `UpdatedAt`. Entities use factory `Create(...)` and `Update(...)` methods.
+- `Data/`: `BankDbContext` (schema `banking`) plus one `IEntityTypeConfiguration<T>` per entity.
+- `Migrations/`: EF Core migrations.
+- `Services/`: one `IXxxService` plus an EF Core implementation per entity. Services return DTOs.
+- `Validators/`: FluentValidation `AbstractValidator<TDto>`, one per request DTO.
+- `IApiMarker.cs`: marker type for `WebApplicationFactory<IApiMarker>`.
 
-`banking-api-tests/` is the xUnit project.
+Test projects:
+- `banking-api-tests-unit/`: model/domain unit tests.
+- `banking-api-tests-integration/`: HTTP tests via `WebApplicationFactory`. These currently hit the dev Postgres database.
+- `banking-api-tests/`: old project, no longer in the `.slnx`. Delete it.
 
 ## Conventions in use
 
-- IDs are set in model constructors with `Guid.CreateVersion7()`.
-- Service methods are async. Writes return `bool`; single lookups return `T?`.
-- New services must be registered in `Program.cs`, and their tables added to `DatabaseInitializer`.
+- Service methods are async. Writes return `bool` or a DTO; single lookups return `T?`.
+- Validation happens in the endpoint (`IValidator<T>`) before the service is called.
+- A new entity needs: model, configuration, `DbSet`, migration, DTOs, validator, service, and an endpoints class.
 
 ## Modern C# / .NET to suggest (with a one-line why)
 
 - File-scoped namespaces (`namespace X;`): less nesting.
-- Primary constructors for services: no boilerplate field assignment.
-- `record` types for request/response DTOs: immutable, with value equality.
-- `required` members: fixes the nullable warnings on models and DTOs.
+- Primary constructors for services: no boilerplate field assignment (`BankDbContext` already uses one).
+- `required` members: fixes the nullable warnings on `Account` and the test `ValidationError`.
 - Collection expressions (`[a, b]`) and `[]` for empty collections.
-- `TypedResults` instead of `Results`: compile-time return types and better OpenAPI output.
-- `MapGroup("/accounts")` and endpoint extension classes: keep `Program.cs` small.
-- `DateOnly` for programme start and end dates, and `TimeProvider` for testable "now".
-- Pattern matching and switch expressions for domain rules.
+- `TypedResults` instead of `Results`: compile-time return types and OpenAPI output without `.Produces<>()`.
+- `MapGroup("/organisations/{organisationId:guid}/programmes")`: nested routes (spec §5).
+- `DateOnly` for programme dates, and `TimeProvider` / `FakeTimeProvider` for "today" (GEN-4).
+- `Results.Problem` / `TypedResults.ValidationProblem` plus `AddProblemDetails()`: the ProblemDetails contract (GEN-6).
+- An abstract record hierarchy with switch expressions for rule kinds (RUL-7).
+- Testcontainers for PostgreSQL: isolated integration tests.
 
 ## Testing
 
-- **Unit tests**: services and domain rules, mocking `IDbConnectionFactory` or other dependencies with NSubstitute.
-- **Integration tests**: `WebApplicationFactory<Program>` (needs the `Microsoft.AspNetCore.Mvc.Testing` package) with a temp or in-memory SQLite database.
-- Name tests `Method_Scenario_ExpectedResult`, and assert with Shouldly (`result.ShouldBe(...)`).
+- **Unit tests**: domain behaviour on the entities (lifecycle, rules, balance).
+- **Integration tests**: `WebApplicationFactory<IApiMarker>` against an isolated database. Assert on status code and ProblemDetails `code`, not on message text.
+- Name tests `Method_Scenario_ExpectedResult` and assert with FluentAssertions. Reference requirement IDs where useful.
 
-## Known gaps (flag when relevant; don't fix)
+## Known tooling issue
 
-- The test project has no `ProjectReference` to `banking-api`, so tests can't see the API types yet.
-- `POST /accounts` never sets `AccountNumber`, which the `NOT NULL` column will reject.
-- The `Accounts` table has no `ProgrammeId` column, and `CreateAccountRequest` has no programme.
-- `GET /accounts` and `GET /accounts/{id}` return hard-coded data. PUT and DELETE are stubs.
-- `OrganisationService` and `ProgrammeService` are unimplemented, and not registered in DI or the database.
-- `DatabaseInitializer` has an unused `command` variable.
-- Nullable warnings on `Account`, `Programme` and `CreateAccountRequest` string properties.
+- MSB3277: Npgsql brings in `Microsoft.EntityFrameworkCore.Relational` 10.0.4, while EF Core is 10.0.14. Adding an explicit `Relational` package reference at 10.0.14 resolves it.

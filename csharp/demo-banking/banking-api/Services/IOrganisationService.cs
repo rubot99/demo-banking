@@ -11,7 +11,7 @@ namespace banking_api.Services
 
         public Task<IEnumerable<OrganisationDto>> GetAllAsync();
 
-        public Task<bool> UpdateAsync(Organisation organisation);
+        public Task<bool> UpdateAsync(Guid organisationId, UpdateOrganisationDto command);
 
         public Task<bool> DeleteAsync(Guid organisationId);
     }

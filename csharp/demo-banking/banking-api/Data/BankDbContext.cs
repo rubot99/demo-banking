@@ -8,7 +8,8 @@ namespace banking_api.Data
         public DbSet<Organisation> Organisations => Set<Organisation>();
 
         //public DbSet<Models.Account> Accounts { get; set; }
-        //public DbSet<Models.Programme> Programmes { get; set; }
+        public DbSet<Programme> Programmes => Set<Programme>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("banking");

@@ -1,14 +1,15 @@
-﻿using banking_api.Models;
+﻿using banking_api.Endpoints.DataTransferObjects;
+using banking_api.Models;
 
 namespace banking_api.Services
 {
     public interface IProgrammeService
     {
-        public Task<bool> CreateAsync(Programme programme);
+        public Task<ProgrammeDto> CreateAsync(CreateProgrammeDto command);
 
-        public Task<Programme?> GetByIdAsync(Guid programmeId);
+        public Task<ProgrammeDto?> GetByIdAsync(Guid programmeId);
 
-        public Task<IEnumerable<Programme>> GetAllAsync(Guid organisationId);
+        public Task<IEnumerable<ProgrammeDto>> GetAllAsync(Guid organisationId);
 
         public Task<bool> UpdateAsync(Programme programme);
 

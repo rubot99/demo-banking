@@ -34,6 +34,14 @@ namespace banking_api.Endpoints
                 .WithTags("Organisations")
                 .WithDescription("Retrieves all organisations.");
 
+            app.MapPut("/organisations/{id:guid}", UpdateOrganisationAsync)
+                .WithName("UpdateOrganisation")
+                .Accepts<UpdateOrganisationDto>("application/json")
+                .Produces<OrganisationDto>(StatusCodes.Status200OK)
+                .Produces<IEnumerable<FluentValidation.Results.ValidationFailure>>(StatusCodes.Status400BadRequest)
+                .WithTags("Organisations")
+                .WithDescription("Updates an existing organisation. Returns the updated organisation with a 200 status code or validation errors with a 400 status code.");
+
             app.MapDelete("/organisations/{id:guid}", DeleteOrganisationAsync)
                 .WithName("DeleteOrganisation")
                 .Produces(StatusCodes.Status204NoContent)
@@ -54,6 +62,20 @@ namespace banking_api.Endpoints
             var organisation = await organisationService.CreateAsync(command);
 
             return Results.CreatedAtRoute("GetOrganisation", new { id = organisation.Id }, organisation);
+        }
+
+        internal static async Task<IResult> UpdateOrganisationAsync(Guid id, UpdateOrganisationDto command, IOrganisationService organisationService, IValidator<UpdateOrganisationDto> validator)
+        {
+            var validationResult = await validator.ValidateAsync(command);
+
+            if (!validationResult.IsValid)
+            {
+                return Results.BadRequest(validationResult.Errors);
+            }
+
+            var updated = await organisationService.UpdateAsync(id, command);
+
+            return updated ? Results.Ok() : Results.NotFound();
         }
 
         internal static async Task<IResult> GetOrganisationByIdAsync(Guid id, IOrganisationService organisationService)

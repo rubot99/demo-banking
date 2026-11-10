@@ -58,19 +58,15 @@ namespace banking_api.Services
             return organisation == null ? null : new OrganisationDto(organisation.Id, organisation.Name, organisation.Address, organisation.Email);
         }
 
-        public async Task<bool> UpdateAsync(Organisation organisation)
+        public async Task<bool> UpdateAsync(Guid organisationId, UpdateOrganisationDto command)
         {
-            var existingOrganisation = await _dbContext.Organisations.FindAsync(organisation.Id);
-
+            var existingOrganisation = await _dbContext.Organisations.FindAsync(organisationId);
             if (existingOrganisation != null)
             {
-                existingOrganisation.Update(organisation.Name, organisation.Address, organisation.Email);
-
+                existingOrganisation.Update(command.Name, command.Address, command.Email);
                 var result = await _dbContext.SaveChangesAsync();
-
                 return result > 0;
             }
-
             return false;
         }
     }
