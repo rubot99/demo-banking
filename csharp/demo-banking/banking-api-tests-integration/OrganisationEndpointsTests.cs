@@ -6,7 +6,7 @@ using System.Net;
 
 namespace banking_api_tests_integration
 {
-    public class OrganisationEndpointsTests : IClassFixture<WebApplicationFactory<IApiMarker>>, IAsyncLifetime
+    public class OrganisationEndpointsTests : IClassFixture<BankingApiFactory>, IAsyncLifetime
     {
         private readonly WebApplicationFactory<IApiMarker> _factory;
         private readonly List<Guid> _createdOrganisationIds = new();
